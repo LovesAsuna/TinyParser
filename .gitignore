@@ -1,7 +1,6 @@
 ### Gradle template
 .gradle
 **/build/
-!backend/src/**/build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -40,5 +39,7 @@ gradle-app.setting
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-### Cusom template
-.idea
+### Custom template
+.idea/
+backend/.idea/
+backend/cmake-build-debug/
