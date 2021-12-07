@@ -27,7 +27,7 @@ fun MainWindow(state: MainWindowState) {
 
     Window(
         state = state.window,
-        title = "GrammarAnalyzer",
+        title = "TinyParser",
         resizable = false,
         onCloseRequest = { exit() }
     ) {
