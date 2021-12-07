@@ -1,8 +1,12 @@
 package com.hyosakura.tinyparser
 
-import com.hyosakura.analyzer.grammar.Term
 import com.hyosakura.tinyparser.enumeration.KeyWords
 import com.hyosakura.tinyparser.enumeration.Symbols
+import com.hyosakura.tinyparser.struct.SyntaxTree
+import com.hyosakura.tinyparser.struct.SyntaxTreeNode
+import com.hyosakura.tinyparser.struct.Term
+import com.hyosakura.tinyparser.struct.Token
+import java.util.*
 
 /**
  * @author LovesAsuna
@@ -30,7 +34,7 @@ class Parser {
         }
     }
 
-    fun parse(): SyntaxTreeNode {
+    private fun parse(): SyntaxTreeNode {
         getToken()
         val root = getNode()
         statementSequence(root)
@@ -39,7 +43,9 @@ class Parser {
 
     private fun statementSequence(parent: SyntaxTreeNode? = null): SyntaxTreeNode? {
         val root = statement(parent)
+        var singleStatement = true
         while (token.term == Symbols.SEMICOLON.term) {
+            singleStatement = false
             match(Symbols.SEMICOLON.term)
             val child2 = statement(parent)
             if (parent != null) {
@@ -49,7 +55,13 @@ class Parser {
                 root.children.add(child2)
             }
         }
-        if (parent != null) return null
+        if (parent != null) {
+            if (!singleStatement) {
+                return null
+            } else {
+                parent.children.add(root)
+            }
+        }
         return root
     }
 
@@ -61,12 +73,12 @@ class Parser {
             KeyWords.READ.term -> readStatement()
             KeyWords.WRITE.term -> writeStatement()
             KeyWords.FOR.term -> forStatement(parent!!)
-            KeyWords.DO.term -> doWhileStatement(parent!!)
+            KeyWords.DO.term -> doWhileStatement()
             else -> throw IllegalArgumentException("Unexpected token: ${token.term}")
         }
     }
 
-    private fun doWhileStatement(parent: SyntaxTreeNode): SyntaxTreeNode {
+    private fun doWhileStatement(): SyntaxTreeNode {
         val root = getNode(token)
         match(KeyWords.DO.term)
         statementSequence(root)
@@ -92,12 +104,14 @@ class Parser {
             to.children.add(getNode(Token(Term("number"), "1")))
             return to
         }
+
         fun buildDownTo(): SyntaxTreeNode {
             val to = getNode(Token(Symbols.MINUS.term, "-"))
             to.children.add(assignExp)
             to.children.add(getNode(Token(Term("number"), "1")))
             return to
         }
+
         val condition = when (token.term) {
             KeyWords.TO.term -> {
                 match(KeyWords.TO.term)
@@ -210,13 +224,17 @@ class Parser {
     }
 
     private fun simpleExpression(): SyntaxTreeNode {
-        val child = term()
+        val left = term()
+        val opStack = LinkedList<SyntaxTreeNode>()
+        val numStack = LinkedList<SyntaxTreeNode>()
+        numStack.push(left)
         while (token.term == Symbols.PLUS.term || token.term == Symbols.MINUS.term) {
-            val root = getNode(token)
-            val child2 = addOp()
-            val child3 = term()
+            val op = addOp()
+            opStack.push(op)
+            val num = term()
+            numStack.push(num)
         }
-        return child
+        return twoStack(opStack, numStack)
     }
 
     private fun addOp(): SyntaxTreeNode {
@@ -224,20 +242,64 @@ class Parser {
         when (token.term) {
             Symbols.PLUS.term -> match(Symbols.PLUS.term)
             Symbols.MINUS.term -> match(Symbols.MINUS.term)
+            Symbols.AND.term -> match(Symbols.AND.term)
+            Symbols.OR.term -> match(Symbols.OR.term)
+            Symbols.NOT.term -> match(Symbols.NOT.term)
         }
         return root
     }
 
-    private fun term(): SyntaxTreeNode {
-        val root = factor()
-        var op: SyntaxTreeNode? = null
-        while (token.term == Symbols.TIMES.term || token.term == Symbols.DIVIDE.term) {
-            op = mulOp()
-            val child = factor()
-            op.children.add(root)
-            op.children.add(child)
+    private fun twoStack(opStack: LinkedList<SyntaxTreeNode>, numStack: LinkedList<SyntaxTreeNode>): SyntaxTreeNode {
+        if (opStack.isEmpty() && numStack.size == 1) {
+            return numStack.first
         }
-        if (op != null) return op
+        val mostTopOp = opStack.first
+        var lastOp : SyntaxTreeNode?=null
+        while (opStack.isNotEmpty()) {
+            val op = opStack.pop()
+            lastOp?.children?.add(op)
+            val num = numStack.pop()
+            op.children.add(num)
+            lastOp = op
+        }
+        if (numStack.isNotEmpty()) {
+            val num = numStack.pop()
+            lastOp?.children?.add(num)
+        }
+        return mostTopOp
+    }
+
+    private fun term(): SyntaxTreeNode {
+        val left = power()
+        val opStack = LinkedList<SyntaxTreeNode>()
+        val numStack = LinkedList<SyntaxTreeNode>()
+        numStack.push(left)
+        while (token.term == Symbols.POWER.term) {
+            val op = powerOp()
+            opStack.push(op)
+            val num = power()
+            numStack.push(num)
+        }
+        return twoStack(opStack, numStack)
+    }
+
+    private fun power(): SyntaxTreeNode {
+        val left = factor()
+        val opStack = LinkedList<SyntaxTreeNode>()
+        val numStack = LinkedList<SyntaxTreeNode>()
+        numStack.push(left)
+        while (token.term == Symbols.TIMES.term || token.term == Symbols.DIVIDE.term) {
+            val op = mulOp()
+            opStack.push(op)
+            val num = factor()
+            numStack.push(num)
+        }
+        return twoStack(opStack, numStack)
+    }
+
+    private fun powerOp(): SyntaxTreeNode {
+        val root = getNode(token)
+        match(Symbols.POWER.term)
         return root
     }
 
@@ -246,6 +308,7 @@ class Parser {
         when (token.term) {
             Symbols.TIMES.term -> match(Symbols.TIMES.term)
             Symbols.DIVIDE.term -> match(Symbols.DIVIDE.term)
+            Symbols.MOD.term -> match(Symbols.MOD.term)
         }
         return root
     }
@@ -266,6 +329,11 @@ class Parser {
                 match(Symbols.LPAREN.term)
                 val root = expression()
                 match(Symbols.RPAREN.term)
+                root
+            }
+            Term("regex") -> {
+                val root = getNode(token)
+                match(Term("regex"))
                 root
             }
             else -> throw IllegalArgumentException("Unexpected token: ${token.term}")

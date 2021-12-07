@@ -1,6 +1,7 @@
 package com.hyosakura.tinyparser
 
-import com.hyosakura.analyzer.grammar.Term
+import com.hyosakura.tinyparser.struct.Term
+import com.hyosakura.tinyparser.struct.Token
 
 /**
  * @author LovesAsuna
@@ -60,6 +61,11 @@ object Scanner {
                 val (token, rest) = splitNumber(line)
                 tokens.add(token)
                 splitSingleLine(rest, tokens)
+            }
+            c == '\"' -> {
+                val regex = line.substring(1).takeWhile { it != '\"' }
+                tokens.add(Token(Term("regex"), regex))
+                splitSingleLine(line.substring(1).dropWhile { it != '\"' }.substring(1), tokens)
             }
             symbols.any { line.startsWith(it) } -> {
                 val symbol = symbols.filter {

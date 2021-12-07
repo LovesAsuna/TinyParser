@@ -10,7 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":LLAnalyzer:backend"))
     testImplementation(kotlin("test"))
 }
 

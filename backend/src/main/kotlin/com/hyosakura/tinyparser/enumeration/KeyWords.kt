@@ -1,6 +1,6 @@
 package com.hyosakura.tinyparser.enumeration
 
-import com.hyosakura.analyzer.grammar.Term
+import com.hyosakura.tinyparser.struct.Term
 
 /**
  * @author LovesAsuna

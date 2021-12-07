@@ -1,6 +1,6 @@
 package com.hyosakura.tinyparser.enumeration
 
-import com.hyosakura.analyzer.grammar.Term
+import com.hyosakura.tinyparser.struct.Term
 
 /**
  * @author LovesAsuna
@@ -21,5 +21,8 @@ enum class Symbols(val term: Term) {
     GREATER_EQUAL(Term(">=")),
     LESS_EQUAL(Term("<=")),
     NOT_EQUAL(Term("<>")),
-    MOD(Term("%"));
+    MOD(Term("%")),
+    AND(Term("and")),
+    OR(Term("or")),
+    NOT(Term("not"))
 }
