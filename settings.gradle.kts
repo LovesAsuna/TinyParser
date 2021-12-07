@@ -1,4 +1,4 @@
 rootProject.name = "TinyParser"
-include(":scanner")
-include(":LLAnalyzer:backend")
-include(":LLAnalyzer:frontend")
+
+include("frontend")
+include("backend")
