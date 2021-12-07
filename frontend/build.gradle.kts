@@ -31,10 +31,10 @@ tasks.compileKotlin {
 
 compose.desktop {
     application {
-        mainClass = "com.hyosakura.analyzer.MainKt"
+        mainClass = "com.hyosakura.parser.MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Exe)
-            packageName = "LLAnalyzer"
+            packageName = "TinyParser"
             packageVersion = "1.0.0"
         }
     }

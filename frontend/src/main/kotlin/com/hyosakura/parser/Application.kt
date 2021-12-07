@@ -1,7 +1,7 @@
-package com.hyosakura.analyzer
+package com.hyosakura.parser
 
 import androidx.compose.runtime.Composable
-import com.hyosakura.analyzer.window.MainWindow
+import com.hyosakura.parser.window.MainWindow
 
 @Composable
 fun Application(state: ApplicationState) {

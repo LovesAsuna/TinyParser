@@ -1,4 +1,4 @@
-package com.hyosakura.analyzer.window
+package com.hyosakura.parser.window
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

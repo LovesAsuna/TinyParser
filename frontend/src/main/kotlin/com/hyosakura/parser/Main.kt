@@ -1,4 +1,4 @@
-package com.hyosakura.analyzer
+package com.hyosakura.parser
 
 import androidx.compose.ui.window.application
 
